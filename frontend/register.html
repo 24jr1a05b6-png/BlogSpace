@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account | BlogSpace</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <a href="index.html" class="logo">BlogSpace<span>.</span></a>
+      <nav class="nav-links"><a href="index.html">Home</a></nav>
+      <div class="auth-actions"><a href="login.html" class="btn btn-primary btn-sm">Sign in</a></div>
+    </div>
+  </header>
+
+  <main class="page container">
+    <div class="form-container">
+      <h1>Create your account</h1>
+      <p style="color:var(--text-light); margin-bottom: 1.5rem;">Join the BlogSpace community today.</p>
+
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="name">Full name</label>
+          <input type="text" id="name" name="name" placeholder="John Doe" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required>
+          <span class="field-error" id="passwordError"></span>
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••" required>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Create account</button>
+        </div>
+      </form>
+      <p style="margin-top:1rem; color:var(--text-light); text-align:center;">
+        Already have an account? <a href="login.html">Sign in here</a>
+      </p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; <span id="year"></span> BlogSpace.</p>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      const original = btn.textContent;
+      btn.textContent = 'Creating account...';
+      btn.disabled = true;
+      document.getElementById('passwordError').textContent = '';
+      try {
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (password !== confirmPassword) {
+          document.getElementById('passwordError').textContent = 'Passwords do not match';
+          btn.textContent = original;
+          btn.disabled = false;
+          return;
+        }
+        if (password.length < 6) {
+          document.getElementById('passwordError').textContent = 'Password must be at least 6 characters';
+          btn.textContent = original;
+          btn.disabled = false;
+          return;
+        }
+
+        await BlogSpace.apiRequest('/auth/register', {
+          method: 'POST',
+          body: { name, email, password },
+        });
+        BlogSpace.showNotification('Account created successfully!', 'success');
+        setTimeout(() => { window.location.href = 'login.html'; }, 800);
+      } catch (err) {
+        document.getElementById('passwordError').textContent = err.message || 'Registration failed';
+        BlogSpace.showNotification(err.message || 'Registration failed', 'error');
+        btn.textContent = original;
+        btn.disabled = false;
+      }
+    });
+    BlogSpace.initApp();
+  </script>
+</body>
+</html>
